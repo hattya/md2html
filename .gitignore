@@ -1,0 +1,6 @@
+*.exe
+*.html
+*.out
+*.sw?
+*.test
+!testdata/*.html

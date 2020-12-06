@@ -1,0 +1,34 @@
+var os = require('os');
+var path = require('path');
+var go = require('language/go').go;
+var language = require('language');
+
+var title = 'Aster ☆ ' + path.basename(os.getwd());
+
+aster.title(title);
+aster.ignore.push(/^testdata$/);
+
+// go
+aster.watch(/.+\.go$/, function() {
+  go.mod.tidy();
+  if (go.test('-v', '-race', '-covermode', 'atomic', '-coverprofile', 'cover.out')) return;
+  go.tool.cover('-func', 'cover.out');
+  go.tool.cover('-html', 'cover.out', '-o', 'coverage.html');
+  if (go.vet()) return;
+});
+
+aster.watch(/go\.mod$/, function() {
+  go.mod.tidy();
+});
+
+// md
+aster.watch(/.+\.md$/, function(files) {
+  files.some(function(md) {
+    return language.system({
+      args: ['go', 'run', '.', md, md.slice(0, -path.extname(md).length) + '.html'],
+      title: 'md2html',
+      success: md,
+      failure: md + ' failed',
+    });
+  });
+});
