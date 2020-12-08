@@ -23,6 +23,7 @@ import (
 
 var (
 	saveHL      bool
+	saveHLLang  []string
 	saveHLStyle string
 	saveLang    string
 	saveTitle   string
@@ -30,6 +31,8 @@ var (
 
 func init() {
 	saveHL = *hl
+	saveHLLang = make([]string, len(hllang))
+	copy(saveHLLang, hllang)
 	saveHLStyle = *hlstyle
 	saveLang = *lang
 	saveTitle = *title
@@ -98,16 +101,20 @@ func TestConvert(t *testing.T) {
 	})
 	t.Run("highlight.js", func(t *testing.T) {
 		*hl = false
-		if err := try(src, "highlight-disabled.html"); err != nil {
+		if err := try(src, "hl-false.html"); err != nil {
 			t.Error(err)
 		}
 		*hl = true
 		*hlstyle = ""
-		if err := try(src, "highlight-disabled.html"); err != nil {
+		if err := try(src, "hl-false.html"); err != nil {
+			t.Error(err)
+		}
+		hllang = []string{"vim"}
+		if err := try(src, "hllang-vim.html"); err != nil {
 			t.Error(err)
 		}
 		*hlstyle = "monokai"
-		if err := try(src, "highlight-monokai.html"); err != nil {
+		if err := try(src, "hlstyle-monokai.html"); err != nil {
 			t.Error(err)
 		}
 	})
@@ -116,6 +123,8 @@ func TestConvert(t *testing.T) {
 func try(src []byte, name string) error {
 	defer func() {
 		*hl = saveHL
+		hllang = make([]string, len(saveHLLang))
+		copy(hllang, saveHLLang)
 		*hlstyle = saveHLStyle
 		*lang = saveLang
 		*title = saveTitle

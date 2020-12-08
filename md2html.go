@@ -14,6 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark-emoji"
@@ -28,12 +29,14 @@ const highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/buil
 
 var (
 	hl      = flag.Bool("hl", true, "use highlight.js")
+	hllang  = csv{}
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
 	lang    = flag.String("lang", "en", "HTML lang attribute")
 	title   = flag.String("title", "", "document title")
 )
 
 func main() {
+	flag.Var(&hllang, "hllang", "comma separated list of highlight.js langauges")
 	flag.Parse()
 
 	src, err := open(0)
@@ -115,6 +118,9 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	if *hl && *hlstyle != "" {
 		fmt.Fprintf(w, "<link rel=\"stylesheet\" href=\"%s/styles/%s.min.css\">\n", highlightJS, *hlstyle)
 		fmt.Fprintf(w, "<script src=\"%s/highlight.min.js\"></script>\n", highlightJS)
+		for _, lang := range hllang {
+			fmt.Fprintf(w, "<script src=\"%s/languages/%s.min.js\"></script>\n", highlightJS, lang)
+		}
 		fmt.Fprintln(w, `<script>hljs.initHighlightingOnLoad();</script>`)
 	}
 	fmt.Fprintln(w, `</head>`)
@@ -126,3 +132,16 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	fmt.Fprintln(w, `</html>`)
 	return
 }
+
+type csv []string
+
+func (csv *csv) Set(s string) error {
+	for _, v := range strings.Split(s, ",") {
+		*csv = append(*csv, strings.TrimSpace(v))
+	}
+	return nil
+}
+
+func (csv *csv) Get() interface{} { return []string(*csv) }
+
+func (csv *csv) String() string { return strings.Join(*csv, ",") }
