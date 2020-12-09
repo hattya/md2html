@@ -25,13 +25,17 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-const highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build"
+const (
+	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build"
+	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+)
 
 var (
 	hl      = flag.Bool("hl", true, "use highlight.js")
 	hllang  = csv{}
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
 	lang    = flag.String("lang", "en", "HTML lang attribute")
+	math    = flag.Bool("m", false, "use MathJax")
 	title   = flag.String("title", "", "document title")
 )
 
@@ -122,6 +126,11 @@ func convert(r io.Reader, w io.Writer) (err error) {
 			fmt.Fprintf(w, "<script src=\"%s/languages/%s.min.js\"></script>\n", highlightJS, lang)
 		}
 		fmt.Fprintln(w, `<script>hljs.initHighlightingOnLoad();</script>`)
+	}
+	// MathJax
+	if *math {
+		fmt.Fprintln(w, `<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>`)
+		fmt.Fprintf(w, "<script id=\"MathJax-script\" async src=\"%s\"></script>\n", mathJax)
 	}
 	fmt.Fprintln(w, `</head>`)
 	fmt.Fprintln(w, `<body>`)

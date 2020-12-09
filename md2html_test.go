@@ -26,6 +26,7 @@ var (
 	saveHLLang  []string
 	saveHLStyle string
 	saveLang    string
+	saveMath    bool
 	saveTitle   string
 )
 
@@ -35,6 +36,7 @@ func init() {
 	copy(saveHLLang, hllang)
 	saveHLStyle = *hlstyle
 	saveLang = *lang
+	saveMath = *math
 	saveTitle = *title
 }
 
@@ -118,6 +120,12 @@ func TestConvert(t *testing.T) {
 			t.Error(err)
 		}
 	})
+	t.Run("MathJax", func(t *testing.T) {
+		*math = true
+		if err := try(src, "math.html"); err != nil {
+			t.Error(err)
+		}
+	})
 }
 
 func try(src []byte, name string) error {
@@ -127,6 +135,7 @@ func try(src []byte, name string) error {
 		copy(hllang, saveHLLang)
 		*hlstyle = saveHLStyle
 		*lang = saveLang
+		*math = saveMath
 		*title = saveTitle
 	}()
 
@@ -145,7 +154,12 @@ func verify(out, html string) (err error) {
 	if err != nil {
 		return
 	}
-	golden = bytes.ReplaceAll(golden, []byte("${highlight.js}"), []byte(highlightJS))
+	for k, v := range map[string]string{
+		"${highlight.js}": highlightJS,
+		"${MathJax}":      mathJax,
+	} {
+		golden = bytes.ReplaceAll(golden, []byte(k), []byte(v))
+	}
 
 	a := strings.Split(strings.TrimSuffix(out, "\n"), "\n")
 	b := strings.Split(strings.TrimSuffix(string(golden), "\n"), "\n")
