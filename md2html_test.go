@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -38,6 +39,27 @@ func init() {
 	saveLang = *lang
 	saveMath = *math
 	saveTitle = *title
+}
+
+func TestCSV(t *testing.T) {
+	var v csv
+
+	if g, e := v.Get(), []string(nil); !reflect.DeepEqual(g, e) {
+		t.Errorf("expected %#v, got %#v", e, g)
+	}
+	if g, e := v.String(), ""; g != e {
+		t.Errorf("expected %q, got %q", e, g)
+	}
+
+	if err := v.Set(" foo , bar "); err != nil {
+		t.Error(err)
+	}
+	if g, e := v.Get(), []string{"foo", "bar"}; !reflect.DeepEqual(g, e) {
+		t.Errorf("expected %#v, got %#v", e, g)
+	}
+	if g, e := v.String(), "foo,bar"; g != e {
+		t.Errorf("expected %q, got %q", e, g)
+	}
 }
 
 func TestOpen(t *testing.T) {
