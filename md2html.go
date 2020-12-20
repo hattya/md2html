@@ -78,7 +78,7 @@ func open(fd int) (f *os.File, err error) {
 
 func exit(err error) {
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v: %v", os.Args[0], err)
+		fmt.Fprintf(os.Stderr, "%v: %v\n", os.Args[0], err)
 		os.Exit(1)
 	}
 	os.Exit(0)
