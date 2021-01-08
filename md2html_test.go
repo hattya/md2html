@@ -1,7 +1,7 @@
 //
 // md2html :: md2html_test.go
 //
-//   Copyright (c) 2020 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2021 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -28,6 +28,7 @@ var (
 	saveHLStyle string
 	saveLang    string
 	saveMath    bool
+	saveStyle   string
 	saveTitle   string
 )
 
@@ -38,6 +39,7 @@ func init() {
 	saveHLStyle = *hlstyle
 	saveLang = *lang
 	saveMath = *math
+	saveStyle = *style
 	saveTitle = *title
 }
 
@@ -117,6 +119,12 @@ func TestConvert(t *testing.T) {
 			t.Error(err)
 		}
 	})
+	t.Run("style", func(t *testing.T) {
+		*style = "style.css"
+		if err := try(src, "style.html"); err != nil {
+			t.Error(err)
+		}
+	})
 	t.Run("title", func(t *testing.T) {
 		*title = "test"
 		if err := try(src, "title-test.html"); err != nil {
@@ -158,6 +166,7 @@ func try(src []byte, name string) error {
 		*hlstyle = saveHLStyle
 		*lang = saveLang
 		*math = saveMath
+		*style = saveStyle
 		*title = saveTitle
 	}()
 

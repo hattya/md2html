@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2021 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -36,6 +36,7 @@ var (
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
 	lang    = flag.String("lang", "en", "HTML lang attribute")
 	math    = flag.Bool("m", false, "use MathJax")
+	style   = flag.String("style", "", "style sheet")
 	title   = flag.String("title", "", "document title")
 )
 
@@ -118,6 +119,9 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		})
 	}
 	fmt.Fprintf(w, "<title>%s</title>\n", *title)
+	if *style != "" {
+		fmt.Fprintf(w, "<link rel=\"stylesheet\" href=\"%s\">\n", *style)
+	}
 	// highlight.js
 	if *hl && *hlstyle != "" {
 		fmt.Fprintf(w, "<link rel=\"stylesheet\" href=\"%s/styles/%s.min.css\">\n", highlightJS, *hlstyle)
@@ -134,9 +138,11 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	}
 	fmt.Fprintln(w, `</head>`)
 	fmt.Fprintln(w, `<body>`)
+	fmt.Fprintln(w, `<article class="markdown">`)
 	if err = md.Renderer().Render(w, src, doc); err != nil {
 		return
 	}
+	fmt.Fprintln(w, `</article>`)
 	fmt.Fprintln(w, `</body>`)
 	fmt.Fprintln(w, `</html>`)
 	return
