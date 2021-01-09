@@ -40,8 +40,11 @@ var (
 	title   = flag.String("title", "", "document title")
 )
 
-func main() {
+func init() {
 	flag.Var(&hllang, "hllang", "comma separated list of highlight.js langauges")
+}
+
+func main() {
 	flag.Parse()
 
 	src, err := open(0)
@@ -111,7 +114,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	fmt.Fprintln(w, `<meta charset="UTF-8">`)
 	if *title == "" {
 		ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-			if n.Type() == ast.TypeBlock && n.Kind().String() == "Heading" {
+			if n.Kind() == ast.KindHeading {
 				*title = string(n.Text(src))
 				return ast.WalkStop, nil
 			}

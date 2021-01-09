@@ -108,7 +108,7 @@ func TestConvert(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Run("deafult", func(t *testing.T) {
+	t.Run("default", func(t *testing.T) {
 		if err := try(src, "default.html"); err != nil {
 			t.Error(err)
 		}
