@@ -105,6 +105,34 @@ func TestOpen(t *testing.T) {
 	}
 }
 
+func TestReadAll(t *testing.T) {
+	for _, data := range [][]byte{
+		[]byte("1\n\n3\n"),
+		[]byte("1\r\n\r\n3\r\n"),
+		[]byte("1\n\r\n3\n"),
+		[]byte("1\r\n\n3\r\n"),
+	} {
+		if g, err := readAll(bytes.NewReader(data)); err != nil {
+			t.Error(err)
+		} else if e := []byte("1\n\n3\n"); !reflect.DeepEqual(g, e) {
+			t.Errorf("expected %q, got %q", e, g)
+		}
+	}
+
+	for _, data := range [][]byte{
+		[]byte("1\n\n3"),
+		[]byte("1\r\n\r\n3"),
+		[]byte("1\n\r\n3"),
+		[]byte("1\r\n\n3"),
+	} {
+		if g, err := readAll(bytes.NewReader(data)); err != nil {
+			t.Error(err)
+		} else if e := []byte("1\n\n3"); !reflect.DeepEqual(g, e) {
+			t.Errorf("expected %q, got %q", e, g)
+		}
+	}
+}
+
 func TestConvert(t *testing.T) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -128,7 +156,13 @@ func TestConvert(t *testing.T) {
 		}
 
 		*embed = true
-		*style = "style.css"
+		*style = "style-lf.css"
+		if err := try(src, "embed.html"); err != nil {
+			t.Error(err)
+		}
+
+		*embed = true
+		*style = "style-crlf.css"
 		if err := try(src, "embed.html"); err != nil {
 			t.Error(err)
 		}

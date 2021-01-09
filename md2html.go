@@ -9,6 +9,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"flag"
 	"fmt"
@@ -114,7 +115,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 			emoji.Emoji,
 		),
 	)
-	src, err := ioutil.ReadAll(r)
+	src, err := readAll(r)
 	if err != nil {
 		return
 	}
@@ -165,7 +166,12 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	fmt.Fprintf(w, "<title>%s</title>\n", *title)
 	if *style != "" {
 		if *embed {
-			if b, err = ioutil.ReadFile(filepath.Join(base, *style)); err != nil {
+			var f *os.File
+			if f, err = os.Open(filepath.Join(base, *style)); err != nil {
+				return
+			}
+			defer f.Close()
+			if b, err = readAll(f); err != nil {
 				return
 			}
 			fmt.Fprintln(w, `<style>`)
@@ -199,6 +205,27 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	fmt.Fprintln(w, `</body>`)
 	fmt.Fprintln(w, `</html>`)
 	return
+}
+
+func readAll(r io.Reader) ([]byte, error) {
+	var buf []byte
+	br := bufio.NewReader(r)
+	for {
+		l, err := br.ReadBytes('\n')
+		// convert CRLF → LF
+		if len(l) > 1 && l[len(l)-2] == '\r' {
+			l = l[:len(l)-1]
+			l[len(l)-1] = '\n'
+		}
+		buf = append(buf, l...)
+
+		if err != nil {
+			if err == io.EOF {
+				return buf, nil
+			}
+			return nil, err
+		}
+	}
 }
 
 type csv []string
