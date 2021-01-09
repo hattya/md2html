@@ -23,6 +23,7 @@ import (
 )
 
 var (
+	saveEmbed   bool
 	saveHL      bool
 	saveHLLang  []string
 	saveHLStyle string
@@ -33,6 +34,7 @@ var (
 )
 
 func init() {
+	saveEmbed = *embed
 	saveHL = *hl
 	saveHLLang = make([]string, len(hllang))
 	copy(saveHLLang, hllang)
@@ -104,6 +106,12 @@ func TestOpen(t *testing.T) {
 }
 
 func TestConvert(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	base = filepath.Join(wd, "testdata")
+
 	src, err := ioutil.ReadFile(filepath.Join("testdata", "a.md"))
 	if err != nil {
 		t.Fatal(err)
@@ -111,6 +119,24 @@ func TestConvert(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		if err := try(src, "default.html"); err != nil {
 			t.Error(err)
+		}
+	})
+	t.Run("embed", func(t *testing.T) {
+		src, err := ioutil.ReadFile(filepath.Join("testdata", "embed.md"))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		*embed = true
+		*style = "style.css"
+		if err := try(src, "embed.html"); err != nil {
+			t.Error(err)
+		}
+
+		*embed = true
+		*style = "_.css"
+		if err := try(nil, "embed.html"); err == nil {
+			t.Error("expected error")
 		}
 	})
 	t.Run("lang", func(t *testing.T) {
@@ -160,6 +186,7 @@ func TestConvert(t *testing.T) {
 
 func try(src []byte, name string) error {
 	defer func() {
+		*embed = saveEmbed
 		*hl = saveHL
 		hllang = make([]string, len(saveHLLang))
 		copy(hllang, saveHLLang)

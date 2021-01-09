@@ -9,11 +9,14 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/yuin/goldmark"
@@ -30,7 +33,10 @@ const (
 	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
 )
 
+var base string
+
 var (
+	embed   = flag.Bool("embed", false, "embed local files")
 	hl      = flag.Bool("hl", true, "use highlight.js")
 	hllang  = csv{}
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
@@ -41,6 +47,11 @@ var (
 )
 
 func init() {
+	var err error
+	if base, err = os.Getwd(); err != nil {
+		exit(err)
+	}
+
 	flag.Var(&hllang, "hllang", "comma separated list of highlight.js langauges")
 }
 
@@ -66,6 +77,7 @@ func open(fd int) (f *os.File, err error) {
 	switch fd {
 	case 0:
 		if name := flag.Arg(fd); name != "" {
+			base = filepath.Dir(name)
 			return os.Open(name)
 		}
 		f = os.Stdin
@@ -107,6 +119,35 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		return
 	}
 	doc := md.Parser().Parse(text.NewReader(src))
+	var b []byte
+
+	if *embed {
+		ast.Walk(doc, func(n ast.Node, entering bool) (ws ast.WalkStatus, err error) {
+			ws = ast.WalkContinue
+			if n.Kind() == ast.KindImage && entering {
+				img := n.(*ast.Image)
+				src := filepath.Join(base, string(img.Destination))
+
+				t := mime.TypeByExtension(filepath.Ext(src))
+				if t == "" {
+					fmt.Fprintf(os.Stderr, "detect %s: unknown media type\n", src)
+					return
+				}
+				if b, err = ioutil.ReadFile(src); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					err = nil
+					return
+				}
+				s := "data:" + t + ";base64,"
+				data := make([]byte, len(s)+base64.StdEncoding.EncodedLen(len(b)))
+				copy(data, []byte(s))
+				base64.StdEncoding.Encode(data[len(s):], b)
+
+				img.Destination = data
+			}
+			return
+		})
+	}
 
 	fmt.Fprintln(w, `<!DOCTYPE html>`)
 	fmt.Fprintf(w, "<html lang=\"%s\">\n", *lang)
@@ -123,7 +164,16 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	}
 	fmt.Fprintf(w, "<title>%s</title>\n", *title)
 	if *style != "" {
-		fmt.Fprintf(w, "<link rel=\"stylesheet\" href=\"%s\">\n", *style)
+		if *embed {
+			if b, err = ioutil.ReadFile(filepath.Join(base, *style)); err != nil {
+				return
+			}
+			fmt.Fprintln(w, `<style>`)
+			w.Write(b)
+			fmt.Fprintln(w, `</style>`)
+		} else {
+			fmt.Fprintf(w, "<link rel=\"stylesheet\" href=\"%s\">\n", *style)
+		}
 	}
 	// highlight.js
 	if *hl && *hlstyle != "" {
