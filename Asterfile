@@ -1,7 +1,7 @@
 var os = require('os');
 var path = require('path');
 var go = require('language/go').go;
-var language = require('language');
+var md2html = require('language/markdown').md2html;
 
 var title = 'Aster ☆ ' + path.basename(os.getwd());
 
@@ -23,12 +23,6 @@ aster.watch(/go\.mod$/, function() {
 
 // md
 aster.watch(/.+\.md$/, function(files) {
-  files.some(function(md) {
-    return language.system({
-      args: ['go', 'run', '.', md, md.slice(0, -path.extname(md).length) + '.html'],
-      title: 'md2html',
-      success: md,
-      failure: md + ' failed',
-    });
-  });
+  go.install();
+  files.some(function(md) { return md2html({ src: md }); });
 });
