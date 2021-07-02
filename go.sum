@@ -1,7 +1,7 @@
 github.com/hattya/go.diff v0.0.0-20201115092322-b73b68c97734 h1:+Vg6HUa+h7h3LMUuqY6ShALXKhcMbLp3IsY281OSLVc=
 github.com/hattya/go.diff v0.0.0-20201115092322-b73b68c97734/go.mod h1:3hSwjFTXvt4azbb0nqLmhfWQpsceKX6T+O9oJmp89kg=
 github.com/yuin/goldmark v1.3.7/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
-github.com/yuin/goldmark v1.3.8 h1:Nw158Q8QN+CPgTmVRByhVwapp8Mm1e2blinhmx4wx5E=
-github.com/yuin/goldmark v1.3.8/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
+github.com/yuin/goldmark v1.3.9 h1:XsVHmzm4P6g84IBbAj+WYMF/IEZ3J9+3I1wlqCNa/SQ=
+github.com/yuin/goldmark v1.3.9/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/yuin/goldmark-emoji v1.0.2-0.20210607094911-0487583eca38 h1:XZjLcLoTPNZuxppY3gwhRqo/T2XF6JMGFFdkAjX3w1w=
 github.com/yuin/goldmark-emoji v1.0.2-0.20210607094911-0487583eca38/go.mod h1:RhP/RWpexdp+KHs7ghKnifRoIs/Bq4nDS7tRbCkOwKY=
