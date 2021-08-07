@@ -3,4 +3,5 @@
 *.out
 *.sw?
 *.test
+md2html
 !testdata/*.html
