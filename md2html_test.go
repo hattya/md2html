@@ -67,12 +67,7 @@ func TestCSV(t *testing.T) {
 }
 
 func TestOpen(t *testing.T) {
-	dir, err := tempDir()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(dir)
-
+	dir := t.TempDir()
 	md := filepath.Join(dir, "a.md")
 	if err := touch(md); err != nil {
 		t.Fatal(err)
@@ -91,11 +86,15 @@ func TestOpen(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i, e := range tt.files {
-			switch g, err := open(i); {
+			f, err := open(i)
+			switch {
 			case err != nil:
 				t.Error(err)
-			case g.Name() != e:
-				t.Error("unexpected file:", g.Name())
+			case f.Name() != e:
+				t.Error("unexpected file:", f.Name())
+			}
+			if i < len(tt.args) {
+				f.Close()
 			}
 		}
 	}
@@ -283,10 +282,6 @@ func verify(out, html string) (err error) {
 	return
 }
 
-func tempDir() (string, error) {
-	return ioutil.TempDir("", "md2html")
-}
-
 func touch(s ...string) error {
-	return ioutil.WriteFile(filepath.Join(s...), []byte{}, 0666)
+	return ioutil.WriteFile(filepath.Join(s...), []byte{}, 0o666)
 }
