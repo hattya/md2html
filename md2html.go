@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020-2021 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2022 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@10/build"
+	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build"
 	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
 )
 
@@ -188,7 +188,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		for _, lang := range hllang {
 			fmt.Fprintf(w, "<script src=\"%s/languages/%s.min.js\"></script>\n", highlightJS, lang)
 		}
-		fmt.Fprintln(w, `<script>hljs.initHighlightingOnLoad();</script>`)
+		fmt.Fprintln(w, `<script>hljs.highlightAll();</script>`)
 	}
 	// MathJax
 	if *math {
