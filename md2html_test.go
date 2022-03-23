@@ -1,7 +1,7 @@
 //
 // md2html :: md2html_test.go
 //
-//   Copyright (c) 2020-2021 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2022 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -195,15 +195,20 @@ func TestConvert(t *testing.T) {
 		if err := try(src, "hl-false.html"); err != nil {
 			t.Error(err)
 		}
+
 		*hl = true
 		*hlstyle = ""
 		if err := try(src, "hl-false.html"); err != nil {
 			t.Error(err)
 		}
+
+		*hl = true
 		hllang = []string{"vim"}
 		if err := try(src, "hllang-vim.html"); err != nil {
 			t.Error(err)
 		}
+
+		*hl = true
 		*hlstyle = "monokai"
 		if err := try(src, "hlstyle-monokai.html"); err != nil {
 			t.Error(err)

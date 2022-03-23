@@ -10,19 +10,15 @@ package main
 
 import (
 	"bufio"
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"mime"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark-emoji"
-	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
@@ -113,6 +109,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		goldmark.WithExtensions(
 			extension.GFM,
 			emoji.Emoji,
+			new(md2html),
 		),
 	)
 	src, err := readAll(r)
@@ -120,49 +117,11 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		return
 	}
 	doc := md.Parser().Parse(text.NewReader(src))
-	var b []byte
-
-	if *embed {
-		ast.Walk(doc, func(n ast.Node, entering bool) (ws ast.WalkStatus, err error) {
-			ws = ast.WalkContinue
-			if n.Kind() == ast.KindImage && entering {
-				img := n.(*ast.Image)
-				src := filepath.Join(base, string(img.Destination))
-
-				t := mime.TypeByExtension(filepath.Ext(src))
-				if t == "" {
-					fmt.Fprintf(os.Stderr, "detect %s: unknown media type\n", src)
-					return
-				}
-				if b, err = ioutil.ReadFile(src); err != nil {
-					fmt.Fprintln(os.Stderr, err)
-					err = nil
-					return
-				}
-				s := "data:" + t + ";base64,"
-				data := make([]byte, len(s)+base64.StdEncoding.EncodedLen(len(b)))
-				copy(data, []byte(s))
-				base64.StdEncoding.Encode(data[len(s):], b)
-
-				img.Destination = data
-			}
-			return
-		})
-	}
 
 	fmt.Fprintln(w, `<!DOCTYPE html>`)
 	fmt.Fprintf(w, "<html lang=\"%s\">\n", *lang)
 	fmt.Fprintln(w, `<head>`)
 	fmt.Fprintln(w, `<meta charset="UTF-8">`)
-	if *title == "" {
-		ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-			if n.Kind() == ast.KindHeading {
-				*title = string(n.Text(src))
-				return ast.WalkStop, nil
-			}
-			return ast.WalkContinue, nil
-		})
-	}
 	fmt.Fprintf(w, "<title>%s</title>\n", *title)
 	if *style != "" {
 		if *embed {
@@ -171,6 +130,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 				return
 			}
 			defer f.Close()
+			var b []byte
 			if b, err = readAll(f); err != nil {
 				return
 			}
