@@ -28,11 +28,13 @@ import (
 const (
 	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build"
 	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js"
 )
 
 var base string
 
 var (
+	diag    = flag.Bool("diag", false, "use Mermaid")
 	embed   = flag.Bool("embed", false, "embed local files")
 	hl      = flag.Bool("hl", true, "use highlight.js")
 	hllang  = csv{}
@@ -154,6 +156,11 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	if *math {
 		fmt.Fprintln(w, `<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>`)
 		fmt.Fprintf(w, "<script id=\"MathJax-script\" async src=\"%s\"></script>\n", mathJax)
+	}
+	// Mermaid
+	if *diag {
+		fmt.Fprintf(w, "<script src=\"%s\"></script>\n", mermaid)
+		fmt.Fprintln(w, `<script>mermaid.initialize({ startOnLoad: true });</script>`)
 	}
 	fmt.Fprintln(w, `</head>`)
 	fmt.Fprintln(w, `<body>`)

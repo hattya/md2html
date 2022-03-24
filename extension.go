@@ -9,6 +9,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -19,6 +20,7 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
 )
@@ -32,6 +34,11 @@ func (ext *md2html) Extend(md goldmark.Markdown) {
 			util.Prioritized(new(astTransformer), 999),
 		),
 	)
+	md.Renderer().AddOptions(
+		renderer.WithNodeRenderers(
+			util.Prioritized(new(nodeRenderer), 500),
+		),
+	)
 }
 
 type astTransformer struct {
@@ -40,6 +47,9 @@ type astTransformer struct {
 func (tr *astTransformer) Transform(doc *ast.Document, r text.Reader, pc parser.Context) {
 	if *embed {
 		tr.embed(doc)
+	}
+	if *diag {
+		tr.mermaid(doc, r)
 	}
 	if *title == "" {
 		tr.title(doc, r)
@@ -75,6 +85,27 @@ func (tr *astTransformer) embed(doc *ast.Document) {
 	})
 }
 
+func (tr *astTransformer) mermaid(doc *ast.Document, r text.Reader) {
+	var list []*ast.FencedCodeBlock
+	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if n.Kind() == ast.KindFencedCodeBlock && entering {
+			fcb := n.(*ast.FencedCodeBlock)
+			if bytes.Equal(fcb.Language(r.Source()), []byte("mermaid")) {
+				list = append(list, fcb)
+			}
+		}
+		return ast.WalkContinue, nil
+	})
+
+	for _, fcb := range list {
+		mb := new(mermaidBlock)
+		mb.SetLines(fcb.Lines())
+		if parent := fcb.Parent(); parent != nil {
+			parent.ReplaceChild(parent, fcb, mb)
+		}
+	}
+}
+
 func (tr *astTransformer) title(doc *ast.Document, r text.Reader) {
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if n.Kind() == ast.KindHeading {
@@ -83,4 +114,37 @@ func (tr *astTransformer) title(doc *ast.Document, r text.Reader) {
 		}
 		return ast.WalkContinue, nil
 	})
+}
+
+type nodeRenderer struct {
+}
+
+func (r *nodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
+	reg.Register(kindMermaidBlock, r.renderMermaidBlock)
+}
+
+func (r *nodeRenderer) renderMermaidBlock(w util.BufWriter, src []byte, n ast.Node, entering bool) (ast.WalkStatus, error) {
+	if entering {
+		w.WriteString(`<div class="mermaid">`)
+		for i := 0; i < n.Lines().Len(); i++ {
+			l := n.Lines().At(i)
+			w.Write(util.EscapeHTML(l.Value(src)))
+		}
+	} else {
+		w.WriteString("</div>\n")
+	}
+	return ast.WalkContinue, nil
+}
+
+var kindMermaidBlock = ast.NewNodeKind("MermaidBlock")
+
+type mermaidBlock struct {
+	ast.BaseBlock
+}
+
+func (n *mermaidBlock) Kind() ast.NodeKind { return kindMermaidBlock }
+func (n *mermaidBlock) IsRaw() bool        { return true }
+
+func (n *mermaidBlock) Dump(src []byte, lv int) {
+	ast.DumpHelper(n, src, lv, nil, nil)
 }

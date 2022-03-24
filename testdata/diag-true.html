@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>md2html (diag)</title>
+<link rel="stylesheet" href="${highlight.js}/styles/github.min.css">
+<script src="${highlight.js}/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="${Mermaid}"></script>
+<script>mermaid.initialize({ startOnLoad: true });</script>
+</head>
+<body>
+<article class="markdown">
+<h1 id="md2html-diag">md2html (diag)</h1>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+	fmt.Println(&quot;Hello, World!&quot;)
+}
+</code></pre>
+<div class="mermaid">flowchart LR;
+  Plan   --&gt; Do;
+  Do     --&gt; Check;
+  Check  --&gt; Action;
+  Action --&gt; Plan;
+</div>
+<div class="mermaid">pie
+  &quot;Windows&quot; : 75.86
+  &quot;OS X&quot;    : 15.76
+  &quot;Other&quot;   :  8.38
+</div>
+</article>
+</body>
+</html>

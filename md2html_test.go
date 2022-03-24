@@ -24,6 +24,7 @@ import (
 
 var (
 	saveEmbed   bool
+	saveDiag    bool
 	saveHL      bool
 	saveHLLang  []string
 	saveHLStyle string
@@ -35,6 +36,7 @@ var (
 
 func init() {
 	saveEmbed = *embed
+	saveDiag = *diag
 	saveHL = *hl
 	saveHLLang = make([]string, len(hllang))
 	copy(saveHLLang, hllang)
@@ -172,6 +174,22 @@ func TestConvert(t *testing.T) {
 			t.Error("expected error")
 		}
 	})
+	t.Run("diag", func(t *testing.T) {
+		src, err := ioutil.ReadFile(filepath.Join("testdata", "diag.md"))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		*diag = false
+		if err := try(src, "diag-false.html"); err != nil {
+			t.Error(err)
+		}
+
+		*diag = true
+		if err := try(src, "diag-true.html"); err != nil {
+			t.Error(err)
+		}
+	})
 	t.Run("lang", func(t *testing.T) {
 		*lang = "ja"
 		if err := try(src, "lang-ja.html"); err != nil {
@@ -225,6 +243,7 @@ func TestConvert(t *testing.T) {
 func try(src []byte, name string) error {
 	defer func() {
 		*embed = saveEmbed
+		*diag = saveDiag
 		*hl = saveHL
 		hllang = make([]string, len(saveHLLang))
 		copy(hllang, saveHLLang)
@@ -253,6 +272,7 @@ func verify(out, html string) (err error) {
 	for k, v := range map[string]string{
 		"${highlight.js}": highlightJS,
 		"${MathJax}":      mathJax,
+		"${Mermaid}":      mermaid,
 	} {
 		golden = bytes.ReplaceAll(golden, []byte(k), []byte(v))
 	}
