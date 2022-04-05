@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -141,7 +140,7 @@ func TestConvert(t *testing.T) {
 	}
 	base = filepath.Join(wd, "testdata")
 
-	src, err := ioutil.ReadFile(filepath.Join("testdata", "a.md"))
+	src, err := os.ReadFile(filepath.Join("testdata", "a.md"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -151,7 +150,7 @@ func TestConvert(t *testing.T) {
 		}
 	})
 	t.Run("embed", func(t *testing.T) {
-		src, err := ioutil.ReadFile(filepath.Join("testdata", "embed.md"))
+		src, err := os.ReadFile(filepath.Join("testdata", "embed.md"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -175,7 +174,7 @@ func TestConvert(t *testing.T) {
 		}
 	})
 	t.Run("diag", func(t *testing.T) {
-		src, err := ioutil.ReadFile(filepath.Join("testdata", "diag.md"))
+		src, err := os.ReadFile(filepath.Join("testdata", "diag.md"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -265,7 +264,7 @@ func try(src []byte, name string) error {
 }
 
 func verify(out, html string) (err error) {
-	golden, err := ioutil.ReadFile(html)
+	golden, err := os.ReadFile(html)
 	if err != nil {
 		return
 	}
@@ -308,5 +307,5 @@ func verify(out, html string) (err error) {
 }
 
 func touch(s ...string) error {
-	return ioutil.WriteFile(filepath.Join(s...), []byte{}, 0o666)
+	return os.WriteFile(filepath.Join(s...), []byte{}, 0o666)
 }

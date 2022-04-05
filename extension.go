@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"mime"
 	"os"
 	"path/filepath"
@@ -69,7 +68,7 @@ func (tr *astTransformer) embed(doc *ast.Document) {
 				return
 			}
 			var b []byte
-			if b, err = ioutil.ReadFile(src); err != nil {
+			if b, err = os.ReadFile(src); err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				err = nil
 				return

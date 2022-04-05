@@ -1,6 +1,6 @@
 module github.com/hattya/md2html
 
-go 1.15
+go 1.16
 
 require (
 	github.com/hattya/go.diff v0.0.0-20210905131750-4d1475c602d5

@@ -11,7 +11,7 @@ A Markdown to HTML converter.
 ## Installation
 
 ```console
-$ go get -u github.com/hattya/md2html
+$ go install github.com/hattya/md2html@latest
 ```
 
 
