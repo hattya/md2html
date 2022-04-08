@@ -28,7 +28,7 @@ import (
 const (
 	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build"
 	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@8/dist/mermaid.min.js"
+	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"
 )
 
 var base string
