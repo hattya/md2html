@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020-2022 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2023 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -28,7 +28,7 @@ import (
 const (
 	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build"
 	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"
+	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"
 )
 
 var base string
@@ -160,8 +160,10 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	}
 	// Mermaid
 	if *diag {
-		fmt.Fprintf(w, "<script src=\"%s\"></script>\n", mermaid)
-		fmt.Fprintln(w, `<script>mermaid.initialize({ startOnLoad: true });</script>`)
+		fmt.Fprintln(w, `<script type="module">`)
+		fmt.Fprintf(w, "import mermaid from '%s';\n", mermaid)
+		fmt.Fprintln(w, `mermaid.initialize({ startOnLoad: true });`)
+		fmt.Fprintln(w, `</script>`)
 	}
 	fmt.Fprintln(w, `</head>`)
 	fmt.Fprintln(w, `<body>`)

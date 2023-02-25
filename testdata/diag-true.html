@@ -6,8 +6,10 @@
 <link rel="stylesheet" href="${highlight.js}/styles/github.min.css">
 <script src="${highlight.js}/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
-<script src="${Mermaid}"></script>
-<script>mermaid.initialize({ startOnLoad: true });</script>
+<script type="module">
+import mermaid from '${Mermaid}';
+mermaid.initialize({ startOnLoad: true });
+</script>
 </head>
 <body>
 <article class="markdown">
