@@ -5,5 +5,5 @@ go 1.18
 require (
 	github.com/hattya/go.diff v0.0.0-20230209123729-c2eebc3d7794
 	github.com/yuin/goldmark v1.5.4
-	github.com/yuin/goldmark-emoji v1.0.2-0.20210607094911-0487583eca38
+	github.com/yuin/goldmark-emoji v1.0.2
 )
