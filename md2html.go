@@ -109,7 +109,10 @@ func convert(r io.Reader, w io.Writer) (err error) {
 			html.WithUnsafe(),
 		),
 		goldmark.WithExtensions(
-			extension.CJK,
+			extension.NewCJK(
+				extension.WithEastAsianLineBreaks(extension.EastAsianLineBreaksCSS3Draft),
+				extension.WithEscapedSpace(),
+			),
 			extension.GFM,
 			emoji.Emoji,
 			new(md2html),
