@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020-2023 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2024 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -51,7 +51,7 @@ func init() {
 		exit(err)
 	}
 
-	flag.Var(&hllang, "hllang", "comma separated list of highlight.js langauges")
+	flag.Var(&hllang, "hllang", "comma separated list of highlight.js languages")
 }
 
 func main() {
