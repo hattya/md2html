@@ -108,7 +108,7 @@ func (tr *astTransformer) mermaid(doc *ast.Document, r text.Reader) {
 func (tr *astTransformer) title(doc *ast.Document, r text.Reader) {
 	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
 		if n.Kind() == ast.KindHeading {
-			*title = string(bytes.TrimSpace(n.Text(r.Source())))
+			*title = string(n.Lines().Value(r.Source()))
 			return ast.WalkStop, nil
 		}
 		return ast.WalkContinue, nil
