@@ -1,7 +1,7 @@
 //
 // md2html :: extension.go
 //
-//   Copyright (c) 2020-2024 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2025 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -125,7 +125,7 @@ func (r *nodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 func (r *nodeRenderer) renderMermaidBlock(w util.BufWriter, src []byte, n ast.Node, entering bool) (ast.WalkStatus, error) {
 	if entering {
 		w.WriteString(`<div class="mermaid">`)
-		for i := 0; i < n.Lines().Len(); i++ {
+		for i := range n.Lines().Len() {
 			l := n.Lines().At(i)
 			w.Write(util.EscapeHTML(l.Value(src)))
 		}
