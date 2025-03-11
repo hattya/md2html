@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020-2024 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2025 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -210,6 +210,6 @@ func (csv *csv) Set(s string) error {
 	return nil
 }
 
-func (csv *csv) Get() interface{} { return []string(*csv) }
+func (csv *csv) Get() any { return []string(*csv) }
 
 func (csv *csv) String() string { return strings.Join(*csv, ",") }
