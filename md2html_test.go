@@ -1,7 +1,7 @@
 //
 // md2html :: md2html_test.go
 //
-//   Copyright (c) 2020-2022 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2025 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -28,7 +28,7 @@ var (
 	saveHLLang  []string
 	saveHLStyle string
 	saveLang    string
-	saveMath    bool
+	saveM       bool
 	saveStyle   string
 	saveTitle   string
 )
@@ -41,7 +41,7 @@ func init() {
 	copy(saveHLLang, hllang)
 	saveHLStyle = *hlstyle
 	saveLang = *lang
-	saveMath = *math
+	saveM = *m
 	saveStyle = *style
 	saveTitle = *title
 }
@@ -232,8 +232,8 @@ func TestConvert(t *testing.T) {
 		}
 	})
 	t.Run("MathJax", func(t *testing.T) {
-		*math = true
-		if err := try(src, "math.html"); err != nil {
+		*m = true
+		if err := try(src, "m.html"); err != nil {
 			t.Error(err)
 		}
 	})
@@ -248,7 +248,7 @@ func try(src []byte, name string) error {
 		copy(hllang, saveHLLang)
 		*hlstyle = saveHLStyle
 		*lang = saveLang
-		*math = saveMath
+		*m = saveM
 		*style = saveStyle
 		*title = saveTitle
 	}()

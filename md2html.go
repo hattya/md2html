@@ -40,7 +40,7 @@ var (
 	hllang  = csv{}
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
 	lang    = flag.String("lang", "en", "HTML lang attribute")
-	math    = flag.Bool("m", false, "use MathJax")
+	m       = flag.Bool("m", false, "use MathJax")
 	style   = flag.String("style", "", "style sheet")
 	title   = flag.String("title", "", "document title")
 )
@@ -157,7 +157,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		fmt.Fprintln(w, `<script>hljs.highlightAll();</script>`)
 	}
 	// MathJax
-	if *math {
+	if *m {
 		fmt.Fprintln(w, `<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>`)
 		fmt.Fprintf(w, "<script id=\"MathJax-script\" async src=\"%s\"></script>\n", mathJax)
 	}
