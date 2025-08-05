@@ -27,7 +27,7 @@ import (
 
 const (
 	highlightJS = "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build"
-	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+	mathJax     = "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"
 	mermaid     = "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
 )
 
@@ -158,8 +158,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	}
 	// MathJax
 	if *m {
-		fmt.Fprintln(w, `<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>`)
-		fmt.Fprintf(w, "<script id=\"MathJax-script\" async src=\"%s\"></script>\n", mathJax)
+		fmt.Fprintf(w, "<script defer src=\"%s\"></script>\n", mathJax)
 	}
 	// Mermaid
 	if *diag {
