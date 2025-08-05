@@ -41,6 +41,7 @@ var (
 	hlstyle = flag.String("hlstyle", "github", "highlight.js style")
 	lang    = flag.String("lang", "en", "HTML lang attribute")
 	m       = flag.Bool("m", false, "use MathJax")
+	mfont   = flag.String("mfont", "", "MathJax font")
 	style   = flag.String("style", "", "style sheet")
 	title   = flag.String("title", "", "document title")
 )
@@ -158,6 +159,15 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	}
 	// MathJax
 	if *m {
+		if *mfont != "" {
+			fmt.Fprintln(w, `<script>`)
+			fmt.Fprintln(w, `MathJax = {`)
+			fmt.Fprintln(w, `  output: {`)
+			fmt.Fprintf(w, "    font: \"%s\"\n", *mfont)
+			fmt.Fprintln(w, `  }`)
+			fmt.Fprintln(w, `};`)
+			fmt.Fprintln(w, `</script>`)
+		}
 		fmt.Fprintf(w, "<script defer src=\"%s\"></script>\n", mathJax)
 	}
 	// Mermaid

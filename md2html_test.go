@@ -29,6 +29,7 @@ var (
 	saveHLStyle string
 	saveLang    string
 	saveM       bool
+	saveMFont   string
 	saveStyle   string
 	saveTitle   string
 )
@@ -42,6 +43,7 @@ func init() {
 	saveHLStyle = *hlstyle
 	saveLang = *lang
 	saveM = *m
+	saveMFont = *mfont
 	saveStyle = *style
 	saveTitle = *title
 }
@@ -236,6 +238,12 @@ func TestConvert(t *testing.T) {
 		if err := try(src, "m.html"); err != nil {
 			t.Error(err)
 		}
+
+		*m = true
+		*mfont = "mathjax-stix2"
+		if err := try(src, "mfont-stix2.html"); err != nil {
+			t.Error(err)
+		}
 	})
 }
 
@@ -249,6 +257,7 @@ func try(src []byte, name string) error {
 		*hlstyle = saveHLStyle
 		*lang = saveLang
 		*m = saveM
+		*mfont = saveMFont
 		*style = saveStyle
 		*title = saveTitle
 	}()
