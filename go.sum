@@ -1,5 +1,5 @@
-github.com/hattya/go.diff v0.0.0-20250302122506-e3b218288b82 h1:yTzd6Esv+r7IcFA73SgBpH8+JZEh70mX6flOmZoir7k=
-github.com/hattya/go.diff v0.0.0-20250302122506-e3b218288b82/go.mod h1:xxq2H7PhkAeXO4fwrZON+UrrHq9StXqofBAqbVyZYUw=
+github.com/hattya/go.diff v0.0.0-20250818133302-361d56c38ca8 h1:ymWvO0HQcsIQ7p1chXUcEe9YNsPUDzZSPLMm6qwmoLs=
+github.com/hattya/go.diff v0.0.0-20250818133302-361d56c38ca8/go.mod h1:AOXTk4ks7LSUxrhTSp2PoDTrAAq8yPTQ8XxOSmC2N40=
 github.com/yuin/goldmark v1.7.13 h1:GPddIs617DnBLFFVJFgpo1aBfe/4xcvMc3SB5t/D0pA=
 github.com/yuin/goldmark v1.7.13/go.mod h1:ip/1k0VRfGynBgxOz0yCqHrbZXhcjxyuS66Brc7iBKg=
 github.com/yuin/goldmark-emoji v1.0.6 h1:QWfF2FYaXwL74tfGOW5izeiZepUDroDJfWubQI9HTHs=
