@@ -1,9 +1,9 @@
 module github.com/hattya/md2html
 
-go 1.23.0
+go 1.24.0
 
 require (
-	github.com/hattya/go.diff v0.0.0-20250818133302-361d56c38ca8
+	github.com/hattya/go.diff v0.1.0
 	github.com/yuin/goldmark v1.8.2
 	github.com/yuin/goldmark-emoji v1.0.6
 )
