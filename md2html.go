@@ -1,7 +1,7 @@
 //
 // md2html :: md2html.go
 //
-//   Copyright (c) 2020-2025 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2026 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -213,7 +213,7 @@ func readAll(r io.Reader) ([]byte, error) {
 type csv []string
 
 func (csv *csv) Set(s string) error {
-	for _, v := range strings.Split(s, ",") {
+	for v := range strings.SplitSeq(s, ",") {
 		*csv = append(*csv, strings.TrimSpace(v))
 	}
 	return nil
