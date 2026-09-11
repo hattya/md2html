@@ -17,12 +17,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark-emoji"
-	"github.com/yuin/goldmark/extension"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/renderer/html"
-	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark-emoji/v2"
+	"github.com/yuin/goldmark/v2/extension"
+	"github.com/yuin/goldmark/v2/parser"
+	"github.com/yuin/goldmark/v2/renderer/html"
+	"github.com/yuin/goldmark/v2/util"
 )
 
 const (
@@ -101,29 +100,33 @@ func exit(err error) {
 }
 
 func convert(r io.Reader, w io.Writer) (err error) {
-	md := goldmark.New(
-		goldmark.WithParserOptions(
-			parser.WithAutoHeadingID(),
-			parser.WithHeadingAttribute(),
+	p := parser.New(
+		parser.WithAttribute(),
+		parser.WithAutoHeadingID(),
+		parser.WithEscapedSpace(),
+		parser.WithExtensions(
+			extension.NewGFMParser(),
+			emoji.Parser,
 		),
-		goldmark.WithRendererOptions(
-			html.WithUnsafe(),
-		),
-		goldmark.WithExtensions(
-			extension.NewCJK(
-				extension.WithEastAsianLineBreaks(extension.EastAsianLineBreaksCSS3Draft),
-				extension.WithEscapedSpace(),
-			),
-			extension.GFM,
-			emoji.Emoji,
-			new(md2html),
+		parser.WithASTTransformers(
+			util.Prioritized[parser.ASTTransformer](new(astTransformer), 999),
 		),
 	)
+	h := html.New(
+		html.WithLineBreakStrategy(html.CSSText3LineBreakStrategy),
+		html.WithUnsafe(),
+		html.WithExtensions(
+			extension.NewGFMHTMLRenderer(),
+			emoji.HTMLRenderer,
+		),
+		html.WithNodeRenderer(kindMermaidBlock, new(nodeRenderer)),
+	)
+
 	src, err := readAll(r)
 	if err != nil {
 		return
 	}
-	doc := md.Parser().Parse(text.NewReader(src))
+	doc := p.Parse(src)
 
 	fmt.Fprintln(w, `<!DOCTYPE html>`)
 	fmt.Fprintf(w, "<html lang=\"%s\">\n", *lang)
@@ -180,7 +183,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 	fmt.Fprintln(w, `</head>`)
 	fmt.Fprintln(w, `<body>`)
 	fmt.Fprintln(w, `<article class="markdown">`)
-	if err = md.Renderer().Render(w, src, doc); err != nil {
+	if err = h.Render(w, src, doc); err != nil {
 		return
 	}
 	fmt.Fprintln(w, `</article>`)

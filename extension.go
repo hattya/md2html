@@ -1,7 +1,7 @@
 //
 // md2html :: extension.go
 //
-//   Copyright (c) 2020-2025 Akinori Hattori <hattya@gmail.com>
+//   Copyright (c) 2020-2026 Akinori Hattori <hattya@gmail.com>
 //
 //   SPDX-License-Identifier: MIT
 //
@@ -12,125 +12,98 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"mime"
 	"os"
 	"path/filepath"
 
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/ast"
-	"github.com/yuin/goldmark/parser"
-	"github.com/yuin/goldmark/renderer"
-	"github.com/yuin/goldmark/text"
-	"github.com/yuin/goldmark/util"
+	"github.com/yuin/goldmark/v2/ast"
+	"github.com/yuin/goldmark/v2/parser"
+	"github.com/yuin/goldmark/v2/renderer"
+	"github.com/yuin/goldmark/v2/renderer/html"
+	"github.com/yuin/goldmark/v2/text"
+	"github.com/yuin/goldmark/v2/util"
 )
-
-type md2html struct {
-}
-
-func (ext *md2html) Extend(md goldmark.Markdown) {
-	md.Parser().AddOptions(
-		parser.WithASTTransformers(
-			util.Prioritized(new(astTransformer), 999),
-		),
-	)
-	md.Renderer().AddOptions(
-		renderer.WithNodeRenderers(
-			util.Prioritized(new(nodeRenderer), 500),
-		),
-	)
-}
 
 type astTransformer struct {
 }
 
 func (tr *astTransformer) Transform(doc *ast.Document, r text.Reader, pc parser.Context) {
-	if *embed {
-		tr.embed(doc)
-	}
-	if *diag {
-		tr.mermaid(doc, r)
-	}
-	if *title == "" {
-		tr.title(doc, r)
-	}
-}
-
-func (tr *astTransformer) embed(doc *ast.Document) {
+	var list []*ast.CodeBlock
+	var h bool
 	ast.Walk(doc, func(n ast.Node, entering bool) (ws ast.WalkStatus, err error) {
 		ws = ast.WalkContinue
-		if n.Kind() == ast.KindImage && entering {
-			img := n.(*ast.Image)
-			src := filepath.Join(base, string(img.Destination))
+		if !entering {
+			return
+		}
+		switch n := n.(type) {
+		case *ast.Image:
+			if *embed {
+				src := filepath.Join(base, n.Destination.Value(r.Source()))
 
-			t := mime.TypeByExtension(filepath.Ext(src))
-			if t == "" {
-				fmt.Fprintf(os.Stderr, "detect %s: unknown media type\n", src)
-				return
-			}
-			var b []byte
-			if b, err = os.ReadFile(src); err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				err = nil
-				return
-			}
-			scheme := []byte("data:" + t + ";base64,")
-			data := make([]byte, len(scheme)+base64.StdEncoding.EncodedLen(len(b)))
-			copy(data, scheme)
-			base64.StdEncoding.Encode(data[len(scheme):], b)
+				t := mime.TypeByExtension(filepath.Ext(src))
+				if t == "" {
+					fmt.Fprintf(os.Stderr, "detect %s: unknown media type\n", src)
+					return
+				}
+				var b []byte
+				if b, err = os.ReadFile(src); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					err = nil
+					return
+				}
+				scheme := []byte("data:" + t + ";base64,")
+				data := make([]byte, len(scheme)+base64.StdEncoding.EncodedLen(len(b)))
+				copy(data, scheme)
+				base64.StdEncoding.Encode(data[len(scheme):], b)
 
-			img.Destination = data
+				n.Destination = text.NewSingleLineValue(data, r.Decoder())
+			}
+		case *ast.CodeBlock:
+			if *diag {
+				if l, ok := n.Language(r.Source()); ok && l == "mermaid" {
+					list = append(list, n)
+				}
+			}
+		case *ast.Heading:
+			if *title == "" && !h {
+				var b bytes.Buffer
+				ast.Walk(n, func(n ast.Node, entering bool) (ws ast.WalkStatus, err error) {
+					if t, ok := n.(*ast.Text); ok && entering {
+						t.Value.WriteTo(&b, r.Source())
+					}
+					return ast.WalkContinue, nil
+				})
+				*title = b.String()
+				h = true
+				ws = ast.WalkSkipChildren
+			}
 		}
 		return
 	})
-}
 
-func (tr *astTransformer) mermaid(doc *ast.Document, r text.Reader) {
-	var list []*ast.FencedCodeBlock
-	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-		if n.Kind() == ast.KindFencedCodeBlock && entering {
-			fcb := n.(*ast.FencedCodeBlock)
-			if bytes.Equal(fcb.Language(r.Source()), []byte("mermaid")) {
-				list = append(list, fcb)
-			}
+	for _, cb := range list {
+		mb := newMermaidBlock()
+		mb.SetPos(cb.Pos())
+		mb.SetSource(cb.Source())
+		mb.SetBlankPreviousLines(cb.HasBlankPreviousLines())
+		if p := cb.Parent(); p != nil {
+			p.ReplaceChild(cb, mb)
 		}
-		return ast.WalkContinue, nil
-	})
-
-	for _, fcb := range list {
-		mb := new(mermaidBlock)
-		mb.SetLines(fcb.Lines())
-		if parent := fcb.Parent(); parent != nil {
-			parent.ReplaceChild(parent, fcb, mb)
-		}
+		mb.Value = cb.Value
 	}
-}
-
-func (tr *astTransformer) title(doc *ast.Document, r text.Reader) {
-	ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-		if n.Kind() == ast.KindHeading {
-			*title = string(n.Lines().Value(r.Source()))
-			return ast.WalkStop, nil
-		}
-		return ast.WalkContinue, nil
-	})
 }
 
 type nodeRenderer struct {
 }
 
-func (r *nodeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
-	reg.Register(kindMermaidBlock, r.renderMermaidBlock)
-}
-
-func (r *nodeRenderer) renderMermaidBlock(w util.BufWriter, src []byte, n ast.Node, entering bool) (ast.WalkStatus, error) {
+func (r *nodeRenderer) Render(w io.Writer, src []byte, n ast.Node, entering bool, rc renderer.Context) (ast.WalkStatus, error) {
+	bw := w.(util.BufWriter)
 	if entering {
-		w.WriteString(`<div class="mermaid">`)
-		for i := range n.Lines().Len() {
-			l := n.Lines().At(i)
-			w.Write(util.EscapeHTML(l.Value(src)))
-		}
+		bw.WriteString(`<pre class="mermaid">`)
+		n.(*mermaidBlock).Value.WriteTo(html.ContextTextWriter(rc), src)
 	} else {
-		w.WriteString("</div>\n")
+		bw.WriteString("</pre>\n")
 	}
 	return ast.WalkContinue, nil
 }
@@ -139,11 +112,18 @@ var kindMermaidBlock = ast.NewNodeKind("MermaidBlock")
 
 type mermaidBlock struct {
 	ast.BaseBlock
+
+	Value text.Lines
+}
+
+func newMermaidBlock() *mermaidBlock {
+	n := new(mermaidBlock)
+	n.Init(n)
+	return n
 }
 
 func (n *mermaidBlock) Kind() ast.NodeKind { return kindMermaidBlock }
-func (n *mermaidBlock) IsRaw() bool        { return true }
 
-func (n *mermaidBlock) Dump(src []byte, lv int) {
-	ast.DumpHelper(n, src, lv, nil, nil)
+func (n *mermaidBlock) Dump(_ []byte) *ast.NodeDump {
+	return ast.NewNodeDump(n, nil)
 }
