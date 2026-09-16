@@ -104,6 +104,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		parser.WithAttribute(),
 		parser.WithAutoHeadingID(),
 		parser.WithEscapedSpace(),
+		parser.WithParseDelimiterFunc(parser.ParseDelimiterSimple),
 		parser.WithExtensions(
 			extension.NewGFMParser(),
 			emoji.Parser,
