@@ -107,7 +107,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		parser.WithParseDelimiterFunc(parser.ParseDelimiterSimple),
 		parser.WithExtensions(
 			extension.NewGFMParser(),
-			emoji.Parser,
+			emoji.NewParser(),
 		),
 		parser.WithASTTransformers(
 			util.Prioritized[parser.ASTTransformer](new(astTransformer), 999),
@@ -118,7 +118,7 @@ func convert(r io.Reader, w io.Writer) (err error) {
 		html.WithUnsafe(),
 		html.WithExtensions(
 			extension.NewGFMHTMLRenderer(),
-			emoji.HTMLRenderer,
+			emoji.NewHTMLRenderer(),
 		),
 		html.WithNodeRenderer(kindMermaidBlock, new(nodeRenderer)),
 	)
